@@ -17,6 +17,12 @@
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-watch": "^7.0.0",
-    "nodemon": "^2.0.2"
-  }
+    "bluebird": "^3.7.2",
+    "chalk": "^3.0.0",
+    "colors": "^1.4.0",
+    "nodemon": "^2.0.2",
+    "q": "^1.5.1",
+    "why-is-node-running": "^2.1.0"
+  },
+  "dependencies": {}
 }

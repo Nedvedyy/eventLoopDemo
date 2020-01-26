@@ -1,42 +1,100 @@
-import * as fs from 'fs';
+/**
+ * good read https://dev.to/khaosdoctor/node-js-under-the-hood-3-deep-dive-into-the-event-loop-135d
+*/
 
-let autoIncrementNumber = 0;
+
+const log = require('why-is-node-running');
+import * as fs from 'fs';
+import * as Q from 'q'
+import * as BlueBird from "bluebird"
+import * as colors from "colors"
+
+let sequenceNo = 0;
 process.currentTickId = 0;
 
-function customConsole(logToPrintout){
-  console.log(`${++autoIncrementNumber}: tick: ${process.currentTickId} : ${logToPrintout}`);
+/* overwrite console.log to include the sequence no, current Tick Id and color */
+let orginalConsoleLog =  console.log;
+console.log = (content, displayColor = 'green') => {
+   orginalConsoleLog(`${++sequenceNo}: tick: ${process.currentTickId} : ${content}`[displayColor]);
 }
 
-customConsole("main module starts ...in tick: ${process.currentTickId}")
+
+/*** starting of the main call stack */
+orginalConsoleLog('🍺 🍺 🍺 main call stack starts'.rainbow);
 fs.readFile('input.txt', (err, data) => {
    if (err) {
-      customConsole(err);
+      process.currentTickId++;
+      console.log('handling the read input.txt err callback in I/O queue', 'grey');
       return;
    }
    console.log(data.toString());
 });
 
+/**
+ *  add the timer to the timers heap, at the timer phase, event loop will check the expired timer
+*/
 setTimeout(() => {
-   customConsole("timeout1");
+   process.currentTickId++;
+   console.log('handling the callback of timeout1 in timeout queue', 'blue');
    process.nextTick(() => {
       process.currentTickId++;
-      customConsole("this is process.nextTick added inside setTimeout1");
+      console.log("hanlding the nextTick callback added inside setTimeout1 nextTick Queue", 'yellow');
    })   
  }, 0);
 
  setTimeout(() =>{
-   customConsole('timeout2');
- },1000);
+   process.currentTickId++;
+   console.log('handling the callback of timeout2 in timeout queue', 'blue');
+ },0);
 
+/**
+ * process.nextTick() fires immediately on the same phase
+ * setImmediate() fires on the following iteration or 'tick' of the event loop
+ */
 setImmediate(() => {
-   customConsole('immediate');
+   process.currentTickId++;
+   console.log('hanlding the callback of immediate1 in check queue');
+});
+/**
+ * Any time you call process.nextTick() in a given phase, all callbacks passed to process.nextTick() 
+ * will be resolved before the event loop continues
+*/
+process.nextTick(() => {
+   process.currentTickId++;
+   console.log('handling the callback of nextTick 1 in nextTick Queue', 'yellow');
 });
 process.nextTick(() => {
    process.currentTickId++;
-   customConsole('this is process.nextTick 1');
+   console.log('handling the callback of nextTick 2 in nextTick Queue', 'yellow');
+});
+
+// promises
+Promise.resolve().then(() => {
+   process.currentTickId++;
+   console.log('handling the callback of native promise resolved in microtask queue','cyan')
+});
+BlueBird.resolve().then(() => {
+   process.currentTickId++;
+   console.log('handling the callback bluebird promise resolved in check queue')
+});
+setImmediate(() => {
+   process.currentTickId++;
+   console.log('handling the callback of immediate2 in check queue')
+});
+Q.resolve().then(() => { 
+   process.currentTickId++;
+   console.log('handling the callback of q promise resolved in nextTick queue', 'yellow')
 });
 process.nextTick(() => {
    process.currentTickId++;
-   customConsole('this is process.nextTick 2');
+   console.log('handling the callback of nextTick 3 in nextTick Queue', 'yellow');
 });
-customConsole('main module ends');
+setTimeout(() => {
+   process.currentTickId++;
+   console.log('handling the callback of timeout3 executed with 3000 delay in timeout Queue', 'blue')
+}, 3000);
+orginalConsoleLog('🍺 🍺 🍺 main call stack ends'.yellow);
+/**this is to print out the callbacks that keep the nodejs running */
+//log();
+
+
