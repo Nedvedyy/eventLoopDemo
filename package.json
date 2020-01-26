@@ -22,7 +22,8 @@
     "colors": "^1.4.0",
     "nodemon": "^2.0.2",
     "q": "^1.5.1",
-    "why-is-node-running": "^2.1.0"
+    "why-is-node-running": "^2.1.0",
+    "braces": ">=2.3.1"
   },
   "dependencies": {}
 }

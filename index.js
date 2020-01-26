@@ -21,6 +21,9 @@ console.log = (content, displayColor = 'green') => {
 
 /*** starting of the main call stack */
 orginalConsoleLog('🍺 🍺 🍺 main call stack starts'.rainbow);
+/**
+ * 1. I/O Queue 
+ */
 fs.readFile('input.txt', (err, data) => {
    if (err) {
       process.currentTickId++;
@@ -31,6 +34,7 @@ fs.readFile('input.txt', (err, data) => {
 });
 
 /**
+ * 2. Timer Queue
  *  add the timer to the timers heap, at the timer phase, event loop will check the expired timer
 */
 setTimeout(() => {
@@ -40,7 +44,7 @@ setTimeout(() => {
       process.currentTickId++;
       console.log("hanlding the nextTick callback added inside setTimeout1 nextTick Queue", 'yellow');
    })   
- }, 0);
+ }, 2);
 
  setTimeout(() =>{
    process.currentTickId++;
@@ -48,6 +52,7 @@ setTimeout(() => {
  },0);
 
 /**
+ * 3. Check queue
  * process.nextTick() fires immediately on the same phase
  * setImmediate() fires on the following iteration or 'tick' of the event loop
  */
@@ -56,6 +61,7 @@ setImmediate(() => {
    console.log('hanlding the callback of immediate1 in check queue');
 });
 /**
+ * 4. nextTick queue
  * Any time you call process.nextTick() in a given phase, all callbacks passed to process.nextTick() 
  * will be resolved before the event loop continues
 */
@@ -68,7 +74,10 @@ process.nextTick(() => {
    console.log('handling the callback of nextTick 2 in nextTick Queue', 'yellow');
 });
 
-// promises
+/**
+ * 5. Promises 
+ * promises
+ */
 Promise.resolve().then(() => {
    process.currentTickId++;
    console.log('handling the callback of native promise resolved in microtask queue','cyan')
